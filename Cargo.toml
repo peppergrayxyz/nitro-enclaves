@@ -1,0 +1,9 @@
+[package]
+name = "nitro-enclaves"
+authors = ["Tyler Fanelli <tfanelli@redhat.com>"]
+license = "Apache-2.0"
+version = "0.0.0"
+edition = "2021"
+description = "Library for AWS Nitro Enclaves"
+
+[dependencies]
