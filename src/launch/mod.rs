@@ -21,7 +21,6 @@ pub struct Initializing;
 /// Facilitates the correct execution of the nitro enclaves launch process.
 pub struct Launcher<T> {
     vm_fd: RawFd,
-    dev: Device,
     slot_uid: u64,
     cpu_ids: Vec<u32>,
     state: PhantomData<T>,
@@ -30,7 +29,7 @@ pub struct Launcher<T> {
 impl Launcher<Initializing> {
     /// Begin the nitro enclaves launch process by creating a Launcher and issuing the NE_CREATE_VM
     /// ioctl.
-    pub fn new(dev: Device) -> Result<Self, LaunchError> {
+    pub fn new(dev: &Device) -> Result<Self, LaunchError> {
         let mut slot_uid: u64 = 0;
         let vm_fd = unsafe { libc::ioctl(dev.as_raw_fd(), NE_CREATE_VM as _, &mut slot_uid) };
 
@@ -40,7 +39,6 @@ impl Launcher<Initializing> {
 
         Ok(Self {
             vm_fd,
-            dev,
             slot_uid,
             cpu_ids: Vec::new(),
             state: PhantomData,
