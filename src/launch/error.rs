@@ -2,7 +2,9 @@
 
 use std::fmt;
 
+const NE_ERR_NOT_IN_INIT_STATE: i32 = 270;
 const NE_ERR_NO_CPUS_AVAIL_IN_POOL: i32 = 272;
+const NE_ERR_INVALID_FLAG_VALUE: i32 = 274;
 
 #[derive(Debug)]
 pub enum LaunchError {
@@ -12,8 +14,14 @@ pub enum LaunchError {
     /// Memory allocation failure for internal bookkeeping variables.
     InternalMemoryAllocation,
 
+    /// The value of the provided flag is invalid.
+    InvalidFlags,
+
     /// No nitro enclave CPU pool set or no CPUs available in the pool.
     NoCpuAvailable,
+
+    /// The enclave is not in "init" (not yet started) state.
+    NotInInitState,
 
     /// Unknown.
     Unknown(std::io::Error),
@@ -30,7 +38,9 @@ impl From<std::io::Error> for LaunchError {
                 match e {
                     libc::EFAULT => Self::CopyToUser,
                     libc::ENOMEM => Self::InternalMemoryAllocation,
+                    NE_ERR_NOT_IN_INIT_STATE => Self::NotInInitState,
                     NE_ERR_NO_CPUS_AVAIL_IN_POOL => Self::NoCpuAvailable,
+                    NE_ERR_INVALID_FLAG_VALUE => Self::InvalidFlags,
                     _ => Self::Unknown(err),
                 }
             }
@@ -46,9 +56,11 @@ impl fmt::Display for LaunchError {
             Self::InternalMemoryAllocation => {
                 "memory allocation failure for internal bookkeeping variables".to_string()
             }
+            Self::InvalidFlags => "the value of the provided flag is invalid".to_string(),
             Self::NoCpuAvailable => {
                 "no nitro enclave CPU pool set or no CPUs available in the pool".to_string()
             }
+            Self::NotInInitState => "not in init (not yet started) state".to_string(),
             Self::Unknown(e) => format!("unknown error: {e}"),
         };
 
