@@ -7,3 +7,5 @@ edition = "2021"
 description = "Library for AWS Nitro Enclaves"
 
 [dependencies]
+libc = "0.2.171"
+nix = { version = "0.29.0", features = ["ioctl"] }
