@@ -13,16 +13,21 @@ use std::{
 
 const NE_MAGIC: u64 = 0xAE;
 const NE_CREATE_VM: u64 = nix::request_code_read!(NE_MAGIC, 0x20, size_of::<u64>()) as _;
+const NE_ADD_VCPU: u64 = nix::request_code_readwrite!(NE_MAGIC, 0x21, size_of::<u32>()) as _;
+
+/// Launcher type-state that indicates an initializing (not yet started) enclave.
+pub struct Initializing;
 
 /// Facilitates the correct execution of the nitro enclaves launch process.
 pub struct Launcher<T> {
     vm_fd: RawFd,
     dev: Device,
     slot_uid: u64,
+    cpu_ids: Vec<u32>,
     state: PhantomData<T>,
 }
 
-impl<T> Launcher<T> {
+impl Launcher<Initializing> {
     /// Begin the nitro enclaves launch process by creating a Launcher and issuing the NE_CREATE_VM
     /// ioctl.
     pub fn new(dev: Device) -> Result<Self, LaunchError> {
@@ -37,7 +42,22 @@ impl<T> Launcher<T> {
             vm_fd,
             dev,
             slot_uid,
+            cpu_ids: Vec::new(),
             state: PhantomData,
         })
+    }
+
+    pub fn vcpu_add(&mut self, id: Option<u32>) -> Result<(), LaunchError> {
+        let mut id = id.unwrap_or(0);
+
+        let ret = unsafe { libc::ioctl(self.vm_fd, NE_ADD_VCPU as _, &mut id) };
+
+        if ret < 0 {
+            return Err(LaunchError::from(Error::last_os_error()));
+        }
+
+        self.cpu_ids.push(id);
+
+        Ok(())
     }
 }
