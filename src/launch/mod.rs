@@ -1,8 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::device::Device;
+mod error;
 
+pub use error::LaunchError;
+
+use crate::device::Device;
 use std::{
+    io::Error,
     marker::PhantomData,
     os::fd::{AsRawFd, RawFd},
 };
@@ -25,11 +29,15 @@ impl<T> Launcher<T> {
         let mut slot_uid: u64 = 0;
         let vm_fd = unsafe { libc::ioctl(dev.as_raw_fd(), NE_CREATE_VM as _, &mut slot_uid) };
 
-        Self {
+        if vm_fd < 0 || slot_uid == 0 {
+            return Err(LaunchError::from(Error::last_os_error()));
+        }
+
+        Ok(Self {
             vm_fd,
             dev,
             slot_uid,
             state: PhantomData,
-        }
+        })
     }
 }
