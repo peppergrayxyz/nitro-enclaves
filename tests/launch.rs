@@ -6,5 +6,6 @@ use nitro_enclaves::{device::Device, launch::Launcher};
 fn launch() {
     let device = Device::open().unwrap();
 
-    let _launcher = Launcher::new(device);
+    let mut launcher = Launcher::new(device).unwrap();
+    launcher.vcpu_add(None).unwrap();
 }

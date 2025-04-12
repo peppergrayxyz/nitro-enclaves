@@ -47,6 +47,10 @@ impl Launcher<Initializing> {
         })
     }
 
+    /// Set a vCPU for an enclave. The vCPU can be auto-chosen from the NE CPU pool or it can be
+    /// set by the caller.
+    ///
+    /// If set by the caller, the CPU needs to be available in the NE CPU pool.
     pub fn vcpu_add(&mut self, id: Option<u32>) -> Result<(), LaunchError> {
         let mut id = id.unwrap_or(0);
 
