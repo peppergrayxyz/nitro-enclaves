@@ -14,12 +14,6 @@ use std::{
     os::fd::{AsRawFd, RawFd},
 };
 
-const NE_MAGIC: u64 = 0xAE;
-const NE_CREATE_VM: u64 = nix::request_code_read!(NE_MAGIC, 0x20, size_of::<u64>()) as _;
-const NE_ADD_VCPU: u64 = nix::request_code_readwrite!(NE_MAGIC, 0x21, size_of::<u32>()) as _;
-const NE_GET_IMAGE_LOAD_INFO: u64 =
-    nix::request_code_readwrite!(NE_MAGIC, 0x22, size_of::<ImageLoadInfo>()) as _;
-
 /// Launcher type-state that indicates an initializing (not yet started) enclave.
 pub struct Initializing;
 

@@ -2,6 +2,18 @@
 
 use super::types::*;
 
+pub const NE_MAGIC: u64 = 0xAE;
+
+// Create a slot that is associated with an enclave VM.
+pub const NE_CREATE_VM: u64 = nix::request_code_read!(NE_MAGIC, 0x20, size_of::<u64>()) as _;
+
+// Set a vCPU for an enclave.
+pub const NE_ADD_VCPU: u64 = nix::request_code_readwrite!(NE_MAGIC, 0x21, size_of::<u32>()) as _;
+
+// Get information needed for in-memory enclave image loading.
+pub const NE_GET_IMAGE_LOAD_INFO: u64 =
+    nix::request_code_readwrite!(NE_MAGIC, 0x22, size_of::<ImageLoadInfo>()) as _;
+
 /// Info necessary for in-memory enclave image.
 #[derive(Default)]
 #[repr(C)]
