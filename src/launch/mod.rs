@@ -10,7 +10,6 @@ pub use types::*;
 use crate::device::Device;
 use linux::*;
 use std::{
-    io::Error,
     marker::PhantomData,
     os::fd::{AsRawFd, RawFd},
 };
@@ -41,7 +40,7 @@ impl Launcher<Initializing> {
         let vm_fd = unsafe { libc::ioctl(dev.as_raw_fd(), NE_CREATE_VM as _, &mut slot_uid) };
 
         if vm_fd < 0 || slot_uid == 0 {
-            return Err(LaunchError::from(Error::last_os_error()));
+            return Err(LaunchError::from_errno());
         }
 
         // Load the VM's enclave image type and fetch the offset in enclave memory of where to
@@ -57,7 +56,7 @@ impl Launcher<Initializing> {
         };
 
         if ret < 0 {
-            return Err(LaunchError::from(Error::last_os_error()));
+            return Err(LaunchError::from_errno());
         }
 
         Ok(Self {
@@ -79,7 +78,7 @@ impl Launcher<Initializing> {
         let ret = unsafe { libc::ioctl(self.vm_fd, NE_ADD_VCPU as _, &mut id) };
 
         if ret < 0 {
-            return Err(LaunchError::from(Error::last_os_error()));
+            return Err(LaunchError::from_errno());
         }
 
         self.cpu_ids.push(id);

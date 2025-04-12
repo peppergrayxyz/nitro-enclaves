@@ -27,6 +27,13 @@ pub enum LaunchError {
     Unknown(std::io::Error),
 }
 
+impl LaunchError {
+    /// Parse an error from errno.
+    pub fn from_errno() -> Self {
+        Self::from(std::io::Error::last_os_error())
+    }
+}
+
 impl From<std::io::Error> for LaunchError {
     fn from(err: std::io::Error) -> Self {
         match err.raw_os_error() {
