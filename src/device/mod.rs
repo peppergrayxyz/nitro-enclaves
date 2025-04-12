@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
-use std::fs::{File, OpenOptions};
+use std::{
+    fs::{File, OpenOptions},
+    os::fd::{AsRawFd, RawFd},
+};
 
 #[allow(dead_code)]
 pub struct Device(File);
@@ -14,5 +17,11 @@ impl Device {
                 .write(true)
                 .open("/dev/nitro_enclaves")?,
         ))
+    }
+}
+
+impl AsRawFd for Device {
+    fn as_raw_fd(&self) -> RawFd {
+        self.0.as_raw_fd()
     }
 }
