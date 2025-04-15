@@ -14,6 +14,10 @@ pub const NE_ADD_VCPU: u64 = nix::request_code_readwrite!(NE_MAGIC, 0x21, size_o
 pub const NE_GET_IMAGE_LOAD_INFO: u64 =
     nix::request_code_readwrite!(NE_MAGIC, 0x22, size_of::<ImageLoadInfo>()) as _;
 
+// Set an enclave's memory region.
+pub const NE_SET_USER_MEMORY_REGION: u64 =
+    nix::request_code_write!(NE_MAGIC, 0x23, size_of::<UserMemoryRegion>()) as _;
+
 /// Info necessary for in-memory enclave image.
 #[derive(Debug, Default)]
 #[repr(C)]
@@ -36,4 +40,18 @@ impl From<&ImageType> for ImageLoadInfo {
             ..Default::default()
         }
     }
+}
+
+/// Enclave memory region.
+#[derive(Debug, Default)]
+#[repr(C)]
+pub struct UserMemoryRegion {
+    /// Usage flags.
+    pub flags: u64,
+
+    /// Region size (in bytes).
+    pub size: u64,
+
+    /// Userspace (virtual) address of region.
+    pub uaddr: u64,
 }
