@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
+use std::fs::File;
+
 /// The image type of the enclave.
 pub enum ImageType {
     /// Enclave Image Format.
-    Eif,
+    Eif(File),
 }
 
 /// Data related to setting enclave memory.

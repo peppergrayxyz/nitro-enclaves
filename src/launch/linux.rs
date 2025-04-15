@@ -28,7 +28,7 @@ pub struct ImageLoadInfo {
 impl From<&ImageType> for ImageLoadInfo {
     fn from(image_type: &ImageType) -> Self {
         let flags = match image_type {
-            ImageType::Eif => 0x01,
+            ImageType::Eif(_) => 0x01,
         };
 
         Self {
