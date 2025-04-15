@@ -15,7 +15,7 @@ pub const NE_GET_IMAGE_LOAD_INFO: u64 =
     nix::request_code_readwrite!(NE_MAGIC, 0x22, size_of::<ImageLoadInfo>()) as _;
 
 /// Info necessary for in-memory enclave image.
-#[derive(Default)]
+#[derive(Debug, Default)]
 #[repr(C)]
 pub struct ImageLoadInfo {
     /// Flags to determine the enclave image type (e.g. Enclave Image Format [EIF]).
