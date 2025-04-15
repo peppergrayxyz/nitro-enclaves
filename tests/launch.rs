@@ -13,7 +13,7 @@ fn launch() {
     let mut launcher = Launcher::new(&device).unwrap();
 
     let eif = File::open("tests/test_data/hello.eif").unwrap();
-    let mem = MemoryInfo::new(ImageType::Eif(eif), 256);
+    let mem = MemoryInfo::new(ImageType::Eif(eif), 512);
 
     launcher.mem_set(mem).unwrap();
     launcher.vcpu_add(None).unwrap();

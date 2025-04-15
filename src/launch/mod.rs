@@ -4,7 +4,7 @@ mod error;
 mod linux;
 mod types;
 
-pub use error::LaunchError;
+pub use error::*;
 pub use types::*;
 
 use crate::device::Device;
@@ -33,7 +33,7 @@ impl Launcher<Initializing> {
         let vm_fd = unsafe { libc::ioctl(dev.as_raw_fd(), NE_CREATE_VM as _, &mut slot_uid) };
 
         if vm_fd < 0 || slot_uid == 0 {
-            return Err(LaunchError::from_errno());
+            return Err(LaunchError::ioctl_err_from_errno());
         }
 
         Ok(Self {
@@ -59,7 +59,19 @@ impl Launcher<Initializing> {
         };
 
         if ret < 0 {
-            return Err(LaunchError::from_errno());
+            return Err(LaunchError::ioctl_err_from_errno());
+        }
+
+        let mut regions = UserMemoryRegions::new(mem.size_mib).map_err(LaunchError::MemInit)?;
+        regions
+            .image_fill(load_info.memory_offset as usize, mem.image_type)
+            .map_err(LaunchError::MemInit)?;
+
+        for r in regions.inner_ref() {
+            let ret = unsafe { libc::ioctl(self.vm_fd, NE_SET_USER_MEMORY_REGION, r) };
+            if ret < 0 {
+                panic!();
+            }
         }
 
         Ok(())
@@ -75,7 +87,7 @@ impl Launcher<Initializing> {
         let ret = unsafe { libc::ioctl(self.vm_fd, NE_ADD_VCPU as _, &mut id) };
 
         if ret < 0 {
-            return Err(LaunchError::from_errno());
+            return Err(LaunchError::ioctl_err_from_errno());
         }
 
         self.cpu_ids.push(id);
