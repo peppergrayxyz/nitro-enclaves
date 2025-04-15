@@ -21,7 +21,6 @@ pub struct Initializing;
 pub struct Launcher<T> {
     vm_fd: RawFd,
     slot_uid: u64,
-    image_memory_offset: u64,
     cpu_ids: Vec<u32>,
     state: PhantomData<T>,
 }
@@ -29,7 +28,7 @@ pub struct Launcher<T> {
 impl Launcher<Initializing> {
     /// Begin the nitro enclaves launch process by creating a Launcher and issuing the NE_CREATE_VM
     /// ioctl.
-    pub fn new(dev: &Device, image_type: ImageType) -> Result<Self, LaunchError> {
+    pub fn new(dev: &Device) -> Result<Self, LaunchError> {
         let mut slot_uid: u64 = 0;
         let vm_fd = unsafe { libc::ioctl(dev.as_raw_fd(), NE_CREATE_VM as _, &mut slot_uid) };
 
@@ -37,13 +36,23 @@ impl Launcher<Initializing> {
             return Err(LaunchError::from_errno());
         }
 
+        Ok(Self {
+            vm_fd,
+            slot_uid,
+            cpu_ids: Vec::new(),
+            state: PhantomData,
+        })
+    }
+
+    /// Set enclave memory from an enclave image type and given size.
+    pub fn mem_set(&mut self, mem: MemoryInfo) -> Result<(), LaunchError> {
         // Load the VM's enclave image type and fetch the offset in enclave memory of where to
         // start placing the enclave image.
-        let mut load_info = ImageLoadInfo::from(image_type);
+        let mut load_info = ImageLoadInfo::from(&mem.image_type);
 
         let ret = unsafe {
             libc::ioctl(
-                vm_fd.as_raw_fd(),
+                self.vm_fd.as_raw_fd(),
                 NE_GET_IMAGE_LOAD_INFO as _,
                 &mut load_info,
             )
@@ -53,13 +62,7 @@ impl Launcher<Initializing> {
             return Err(LaunchError::from_errno());
         }
 
-        Ok(Self {
-            vm_fd,
-            slot_uid,
-            image_memory_offset: load_info.memory_offset,
-            cpu_ids: Vec::new(),
-            state: PhantomData,
-        })
+        Ok(())
     }
 
     /// Set a vCPU for an enclave. The vCPU can be auto-chosen from the NE CPU pool or it can be

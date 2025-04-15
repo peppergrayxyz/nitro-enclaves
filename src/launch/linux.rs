@@ -25,8 +25,8 @@ pub struct ImageLoadInfo {
     pub memory_offset: u64,
 }
 
-impl From<ImageType> for ImageLoadInfo {
-    fn from(image_type: ImageType) -> Self {
+impl From<&ImageType> for ImageLoadInfo {
+    fn from(image_type: &ImageType) -> Self {
         let flags = match image_type {
             ImageType::Eif => 0x01,
         };
