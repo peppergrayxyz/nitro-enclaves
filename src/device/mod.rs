@@ -5,7 +5,6 @@ use std::{
     os::fd::{AsRawFd, RawFd},
 };
 
-#[allow(dead_code)]
 pub struct Device(File);
 
 impl Device {
