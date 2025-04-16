@@ -9,10 +9,13 @@ pub use types::*;
 
 use crate::device::Device;
 use linux::*;
+use rand::{rngs::OsRng, TryRngCore};
 use std::{
     marker::PhantomData,
     os::fd::{AsRawFd, RawFd},
 };
+
+const VMADDR_CID_PARENT: u32 = 3;
 
 /// Launcher type-state that indicates an initializing (not yet started) enclave.
 pub struct Initializing;
@@ -93,5 +96,31 @@ impl Launcher<Initializing> {
         self.cpu_ids.push(id);
 
         Ok(())
+    }
+
+    /// Start running an enclave. Supply start flags and optional enclave CID. If successful, will
+    /// return the actual enclave's CID (which may be different than the supplied CID).
+    pub fn start(&self, flags: StartFlags, cid: Option<u64>) -> Result<u64, LaunchError> {
+        let mut cid = cid.unwrap_or(0);
+
+        loop {
+            if cid > VMADDR_CID_PARENT as u64 && cid <= u32::MAX as u64 {
+                break;
+            }
+
+            cid = OsRng
+                .try_next_u32()
+                .map_err(|_| LaunchError::CidRandomGenerate)? as u64;
+        }
+
+        let mut start_info = StartInfo::new(flags, cid);
+
+        let ret = unsafe { libc::ioctl(self.vm_fd, NE_START_ENCLAVE as _, &mut start_info) };
+
+        if ret < 0 {
+            return Err(LaunchError::ioctl_err_from_errno());
+        }
+
+        Ok(start_info.cid)
     }
 }

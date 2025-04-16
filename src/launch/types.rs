@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
+use bitflags::bitflags;
 use std::fs::File;
 
 /// The image type of the enclave.
@@ -23,5 +24,13 @@ impl MemoryInfo {
             image_type,
             size_mib,
         }
+    }
+}
+
+bitflags! {
+    /// Configuration flags for starting an enclave.
+    pub struct StartFlags: u64 {
+        /// Start enclave in debug mode.
+        const DEBUG = 1;
     }
 }

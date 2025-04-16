@@ -24,6 +24,10 @@ pub const NE_GET_IMAGE_LOAD_INFO: u64 =
 pub const NE_SET_USER_MEMORY_REGION: u64 =
     nix::request_code_write!(NE_MAGIC, 0x23, size_of::<UserMemoryRegion>()) as _;
 
+// Start running an enclave.
+pub const NE_START_ENCLAVE: u64 =
+    nix::request_code_readwrite!(NE_MAGIC, 0x24, size_of::<StartInfo>()) as _;
+
 // Default enclave memory region.
 const NE_DEFAULT_MEMORY_REGION: u64 = 0;
 
@@ -192,5 +196,23 @@ impl UserMemoryRegions {
 
     pub fn inner_ref(&self) -> &Vec<UserMemoryRegion> {
         &self.0
+    }
+}
+
+/// Encapsulates info for startting an enclave.
+#[repr(C)]
+pub struct StartInfo {
+    /// Usage flags.
+    flags: u64,
+
+    /// Enclave CID.
+    pub cid: u64,
+}
+
+impl StartInfo {
+    pub fn new(flags: StartFlags, cid: u64) -> Self {
+        let flags = flags.bits();
+
+        Self { flags, cid }
     }
 }

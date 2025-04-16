@@ -10,6 +10,8 @@ const NE_ERR_INVALID_FLAG_VALUE: i32 = 274;
 pub enum LaunchError {
     Ioctl(IoctlError),
     MemInit(MemInitError),
+    CidRandomGenerate,
+    VsockBind(io::Error),
 }
 
 impl LaunchError {
@@ -24,6 +26,8 @@ impl fmt::Display for LaunchError {
         let msg = match self {
             Self::Ioctl(e) => format!("ioctl error: {e}"),
             Self::MemInit(e) => format!("memory initialization error: {e}"),
+            Self::CidRandomGenerate => "unable to randomly-generate enclave CID".to_string(),
+            Self::VsockBind(e) => format!("unable to bind to vsock address: {e}"),
         };
 
         write!(f, "{}", msg)

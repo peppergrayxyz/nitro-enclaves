@@ -2,7 +2,7 @@
 
 use nitro_enclaves::{
     device::Device,
-    launch::{ImageType, Launcher, MemoryInfo},
+    launch::{ImageType, Launcher, MemoryInfo, StartFlags},
 };
 use std::fs::File;
 
@@ -17,4 +17,6 @@ fn launch() {
 
     launcher.mem_set(mem).unwrap();
     launcher.vcpu_add(None).unwrap();
+
+    let _cid = launcher.start(StartFlags::DEBUG, None).unwrap();
 }
