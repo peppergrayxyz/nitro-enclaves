@@ -47,6 +47,11 @@ impl Launcher<Initializing> {
         })
     }
 
+    /// Get the enclave's slot UID.
+    pub fn slot_uid(&self) -> u64 {
+        self.slot_uid
+    }
+
     /// Set enclave memory from an enclave image type and given size.
     pub fn mem_set(&mut self, mem: MemoryInfo) -> Result<(), LaunchError> {
         // Load the VM's enclave image type and fetch the offset in enclave memory of where to
