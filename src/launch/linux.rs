@@ -54,7 +54,7 @@ pub struct ImageLoadInfo {
     pub memory_offset: u64,
 }
 
-impl From<&ImageType> for ImageLoadInfo {
+impl From<&ImageType<'_>> for ImageLoadInfo {
     fn from(image_type: &ImageType) -> Self {
         let flags = match image_type {
             ImageType::Eif(_) => 0x01,
@@ -168,7 +168,7 @@ impl UserMemoryRegions {
 
     pub fn image_fill(&mut self, offset: usize, image: ImageType) -> Result<(), MemInitError> {
         // Only EIF images are supported at the moment.
-        let ImageType::Eif(mut image) = image;
+        let ImageType::Eif(image) = image;
 
         let metadata = image.metadata().map_err(MemInitError::ImageMetadata)?;
         let image_size = metadata.len() as usize;
@@ -181,7 +181,7 @@ impl UserMemoryRegions {
         let mut written: usize = 0;
 
         for region in &mut self.0 {
-            region.image_fill(&mut image, offset, image_size, &mut written)?;
+            region.image_fill(image, offset, image_size, &mut written)?;
             if written >= limit {
                 break;
             }

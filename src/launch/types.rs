@@ -6,22 +6,22 @@ use bitflags::bitflags;
 use std::fs::File;
 
 /// The image type of the enclave.
-pub enum ImageType {
+pub enum ImageType<'a> {
     /// Enclave Image Format.
-    Eif(File),
+    Eif(&'a mut File),
 }
 
 /// Data related to setting enclave memory.
-pub struct MemoryInfo {
+pub struct MemoryInfo<'a> {
     /// Enclave image type.
-    pub image_type: ImageType,
+    pub image_type: ImageType<'a>,
 
     /// Amount of memory (in MiB) to allocate to the enclave.
     pub size_mib: usize,
 }
 
-impl MemoryInfo {
-    pub fn new(image_type: ImageType, size_mib: usize) -> Self {
+impl<'a> MemoryInfo<'a> {
+    pub fn new(image_type: ImageType<'a>, size_mib: usize) -> Self {
         Self {
             image_type,
             size_mib,
