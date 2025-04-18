@@ -29,31 +29,45 @@ const SO_VM_SOCKETS_CONNECT_TIMEOUT: i32 = 6;
 
 const HEART_BEAT: u8 = 0xb7;
 
+// Create and start a nitro enclave using the library API.
 #[test]
 fn launch() {
+    // Open /dev/nitro_enclaves.
     let device = Device::open().unwrap();
 
+    // Create a new VM from the device.
     let mut launcher = Launcher::new(&device).unwrap();
 
+    // Open the test EIF file.
     let mut eif = File::open("tests/test_data/hello.eif").unwrap();
-    let mem = MemoryInfo::new(ImageType::Eif(&mut eif), 512);
 
+    // Set enclave memory with provided EIF file and 512 MiB of memory.
+    let mem = MemoryInfo::new(ImageType::Eif(&mut eif), 512);
     launcher.mem_set(mem).unwrap();
+
+    // Add one vCPU to the enclave.
     launcher.vcpu_add(None).unwrap();
 
+    // Create a vsock listener to verify enclave kernel started.
     let sockaddr = VsockAddr::new(VMADDR_CID_PARENT, ENCLAVE_READY_VSOCK_PORT);
     let listener = VsockListener::bind(&sockaddr).unwrap();
 
+    // Start the enclave (in debug mode) and get its CID.
     let cid: u32 = launcher
         .start(StartFlags::DEBUG, None)
         .unwrap()
         .try_into()
         .unwrap();
 
+    // Given the enclave image and amount of memory (in bytes), calculate the poll timeout for the
+    // vsock listener.
     let poll_timeout = PollTimeout::try_from((&eif, 512 << 20)).unwrap();
 
+    // Verify the enclave kernel has booted (setting the vsock timeout to the value calculated in
+    // poll_timeout).
     enclave_check(listener, poll_timeout.into(), cid);
 
+    // The enclave was started in debug mode. Listen for debug output on a vsock for the enclave.
     listen(VMADDR_CID_HYPERVISOR, cid + CID_TO_CONSOLE_PORT_OFFSET);
 }
 
@@ -84,6 +98,7 @@ pub fn enclave_check(listener: VsockListener, poll_timeout_ms: libc::c_int, cid:
 }
 
 fn listen(cid: u32, port: u32) {
+    // Create a vsock to listen for enclave debug output.
     let socket_fd = socket(
         AddressFamily::Vsock,
         SockType::Stream,
@@ -94,19 +109,29 @@ fn listen(cid: u32, port: u32) {
 
     let sockaddr = NixVsockAddr::new(cid, port);
 
+    // Set the vsock connection timeout.
     vsock_timeout(socket_fd);
+
+    // Try to connect to the enclave.
     connect(socket_fd, &sockaddr).unwrap();
 
+    // The testing EIF image prints Linux boot logs as debug output. One such message contains:
+    //
+    // [    0.000000] Booting Linux on physical CPU _
+    //
+    // Verify a substring of this message was found in the debug output from the enclave.
     let mut boot_msg_found = false;
 
     let mut buf = [0u8; 512];
     loop {
+        // Read debug output from vsock.
         let ret = read(socket_fd, &mut buf);
         let Ok(sz) = ret else {
             break;
         };
         if sz != 0 {
             let msg = String::from_utf8(buf[..sz].to_vec()).unwrap();
+            // Check if the Linux boot message is found in any of the output.
             if msg.contains("Booting Linux") {
                 boot_msg_found = true;
             }
@@ -116,13 +141,16 @@ fn listen(cid: u32, port: u32) {
         }
     }
 
+    // Ensure the boot message was found.
     if !boot_msg_found {
         panic!("Linux boot message not found from vsock output");
     }
 }
 
 fn vsock_timeout(socket_fd: RawFd) {
+    // Set the timeout to 20 seconds.
     let timeval = TimeVal::milliseconds(20000);
+
     let ret = unsafe {
         libc::setsockopt(
             socket_fd,
