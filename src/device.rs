@@ -5,10 +5,11 @@ use std::{
     os::fd::{AsRawFd, RawFd},
 };
 
+/// A handle to the /dev/nitro_enclaves device.
 pub struct Device(File);
 
 impl Device {
-    // Create a handle to the Nitro Enclaves device (/dev/nitro_enclaves).
+    /// Open the device and create a handle.
     pub fn open() -> std::io::Result<Self> {
         Ok(Self(
             OpenOptions::new()
