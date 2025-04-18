@@ -10,25 +10,18 @@ pub use types::*;
 use crate::device::Device;
 use linux::*;
 use rand::{rngs::OsRng, TryRngCore};
-use std::{
-    marker::PhantomData,
-    os::fd::{AsRawFd, RawFd},
-};
+use std::os::fd::{AsRawFd, RawFd};
 
 const VMADDR_CID_PARENT: u32 = 3;
 
-/// Launcher type-state that indicates an initializing (not yet started) enclave.
-pub struct Initializing;
-
 /// Facilitates the correct execution of the nitro enclaves launch process.
-pub struct Launcher<T> {
+pub struct Launcher {
     vm_fd: RawFd,
     slot_uid: u64,
     cpu_ids: Vec<u32>,
-    state: PhantomData<T>,
 }
 
-impl Launcher<Initializing> {
+impl Launcher {
     /// Begin the nitro enclaves launch process by creating a Launcher and issuing the NE_CREATE_VM
     /// ioctl.
     pub fn new(dev: &Device) -> Result<Self, LaunchError> {
@@ -43,7 +36,6 @@ impl Launcher<Initializing> {
             vm_fd,
             slot_uid,
             cpu_ids: Vec::new(),
-            state: PhantomData,
         })
     }
 
