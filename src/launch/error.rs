@@ -6,10 +6,16 @@ const NE_ERR_NOT_IN_INIT_STATE: i32 = 270;
 const NE_ERR_NO_CPUS_AVAIL_IN_POOL: i32 = 272;
 const NE_ERR_INVALID_FLAG_VALUE: i32 = 274;
 
+/// Error that may occur during the launch process.
 #[derive(Debug)]
 pub enum LaunchError {
+    /// /dev/nitro_enclaves ioctl error.
     Ioctl(IoctlError),
+
+    /// Memory initialization error.
     MemInit(MemInitError),
+
+    /// Error occuring when randomly-generating an enclave CID.
     CidRandomGenerate,
     VsockBind(io::Error),
 }
@@ -34,6 +40,7 @@ impl fmt::Display for LaunchError {
     }
 }
 
+/// Error that may occur when issuing /dev/nitro_enclaves ioctls.
 #[derive(Debug)]
 pub enum IoctlError {
     /// copy_to_user() failure.
@@ -103,6 +110,7 @@ impl fmt::Display for IoctlError {
     }
 }
 
+/// Error that may occur when allocating and configuring enclave memory.
 #[derive(Debug)]
 pub enum MemInitError {
     /// A valid combination of hugepages could not be found for the requested size.
