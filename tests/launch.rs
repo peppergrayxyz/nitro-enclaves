@@ -19,7 +19,7 @@ use std::{
 };
 use vsock::{VsockAddr, VsockListener};
 
-const ENCLAVE_VM_SIZE_MIB: usize = 256;
+const ENCLAVE_VM_SIZE_MIB: usize = 128;
 
 const ENCLAVE_READY_VSOCK_PORT: u32 = 9000;
 const CID_TO_CONSOLE_PORT_OFFSET: u32 = 10000;
@@ -43,7 +43,7 @@ fn launch() {
     // Open the test EIF file.
     let mut eif = File::open("tests/test_data/hello.eif").unwrap();
 
-    // Set enclave memory with provided EIF file and 256 MiB of memory.
+    // Set enclave memory with provided EIF file and 128 MiB of memory.
     let mem = MemoryInfo::new(ImageType::Eif(&mut eif), ENCLAVE_VM_SIZE_MIB);
     launcher.mem_set(mem).unwrap();
 
