@@ -19,6 +19,8 @@ use std::{
 };
 use vsock::{VsockAddr, VsockListener};
 
+const ENCLAVE_VM_SIZE_MIB: usize = 256;
+
 const ENCLAVE_READY_VSOCK_PORT: u32 = 9000;
 const CID_TO_CONSOLE_PORT_OFFSET: u32 = 10000;
 
@@ -41,8 +43,8 @@ fn launch() {
     // Open the test EIF file.
     let mut eif = File::open("tests/test_data/hello.eif").unwrap();
 
-    // Set enclave memory with provided EIF file and 512 MiB of memory.
-    let mem = MemoryInfo::new(ImageType::Eif(&mut eif), 512);
+    // Set enclave memory with provided EIF file and 256 MiB of memory.
+    let mem = MemoryInfo::new(ImageType::Eif(&mut eif), ENCLAVE_VM_SIZE_MIB);
     launcher.mem_set(mem).unwrap();
 
     // Add one vCPU to the enclave.
@@ -61,7 +63,7 @@ fn launch() {
 
     // Given the enclave image and amount of memory (in bytes), calculate the poll timeout for the
     // vsock listener.
-    let poll_timeout = PollTimeout::try_from((&eif, 512 << 20)).unwrap();
+    let poll_timeout = PollTimeout::try_from((&eif, ENCLAVE_VM_SIZE_MIB << 20)).unwrap();
 
     // Verify the enclave kernel has booted (setting the vsock timeout to the value calculated in
     // poll_timeout).
