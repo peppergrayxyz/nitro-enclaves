@@ -1,10 +1,14 @@
 [package]
 name = "nitro-enclaves"
-authors = ["Tyler Fanelli <tfanelli@redhat.com>"]
-license = "Apache-2.0"
 version = "0.1.0"
+authors = ["The VirTEE Project Developers <virtee-security@redhat.com>"]
+license = "Apache-2.0"
 edition = "2021"
+repository = "https://github.com/virtee/nitro-enclaves"
 description = "Library for AWS Nitro Enclaves"
+readme = "README.md"
+keywords = ["aws", "nitro", "enclaves"]
+exclude = [".gitignore", ".github/*"]
 
 [dependencies]
 bitflags = "2.9.0"
