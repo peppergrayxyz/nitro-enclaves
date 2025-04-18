@@ -17,7 +17,6 @@ pub enum LaunchError {
 
     /// Error occuring when randomly-generating an enclave CID.
     CidRandomGenerate,
-    VsockBind(io::Error),
 }
 
 impl LaunchError {
@@ -33,7 +32,6 @@ impl fmt::Display for LaunchError {
             Self::Ioctl(e) => format!("ioctl error: {e}"),
             Self::MemInit(e) => format!("memory initialization error: {e}"),
             Self::CidRandomGenerate => "unable to randomly-generate enclave CID".to_string(),
-            Self::VsockBind(e) => format!("unable to bind to vsock address: {e}"),
         };
 
         write!(f, "{}", msg)
