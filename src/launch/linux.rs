@@ -94,9 +94,13 @@ impl UserMemoryRegion {
         };
 
         if location > offset {
+            // Calculate the offset both within the memory region and within the image file to
+            // begin reading from and writing to.
             let region_offset = offset.saturating_sub(*written);
             let image_offset = written.saturating_sub(offset);
 
+            // Amount to write is restricted by both the memory region's capacity and amount of
+            // data remaining in the image file.
             let write_amount = min(
                 self.size as usize - region_offset,
                 image_size - image_offset,
@@ -117,9 +121,11 @@ impl UserMemoryRegion {
     }
 }
 
+/// Allocated enclave memory regions.
 pub struct UserMemoryRegions(Vec<UserMemoryRegion>);
 
 impl UserMemoryRegions {
+    /// Allocate huge pages for enclave memory from the requested size (in MiB).
     pub fn new(size_mib: usize) -> Result<Self, MemInitError> {
         let mut regions = Vec::new();
         let mut size = size_mib << 20;
@@ -128,6 +134,8 @@ impl UserMemoryRegions {
         while size > 0 {
             found = false;
             for (hp_flag, reg_size) in HUGE_FLAG_SIZE {
+                // Prevent wasting memory by only allocating huge pages that are smaller in size
+                // than the remaining memory needing to be allocated.
                 if size < reg_size {
                     continue;
                 }
@@ -158,6 +166,7 @@ impl UserMemoryRegions {
                 found = true;
             }
 
+            // Ensure that a valid memory region was found and mapped. If not, return an error.
             if !found {
                 return Err(MemInitError::NoHugePageFound);
             }
@@ -166,20 +175,23 @@ impl UserMemoryRegions {
         Ok(Self(regions))
     }
 
+    /// Populate the memory regions with the enclave image.
     pub fn image_fill(&mut self, offset: usize, image: ImageType) -> Result<(), MemInitError> {
         // Only EIF images are supported at the moment.
         let ImageType::Eif(image) = image;
 
+        // Get the size of the enclave image.
         let metadata = image.metadata().map_err(MemInitError::ImageMetadata)?;
         let image_size = metadata.len() as usize;
         image.rewind().map_err(MemInitError::ImageRewind)?;
 
+        // Calculate the final index in guest memory in which the image should be written.
         let Some(limit) = offset.checked_add(image_size) else {
             return Err(MemInitError::ImagePlacementOverflow);
         };
 
+        // Write the enclave image to the memory regions.
         let mut written: usize = 0;
-
         for region in &mut self.0 {
             region.image_fill(image, offset, image_size, &mut written)?;
             if written >= limit {
@@ -187,6 +199,7 @@ impl UserMemoryRegions {
             }
         }
 
+        // Ensure the entire enclave image was written.
         if written < limit {
             return Err(MemInitError::ImageWriteIncomplete);
         }
@@ -194,6 +207,7 @@ impl UserMemoryRegions {
         Ok(())
     }
 
+    /// Get a reference to the inner vector of memory regions.
     pub fn inner_ref(&self) -> &Vec<UserMemoryRegion> {
         &self.0
     }
