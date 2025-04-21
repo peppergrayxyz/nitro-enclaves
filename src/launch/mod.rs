@@ -44,7 +44,7 @@ impl Launcher {
     }
 
     /// Allocate enclave memory and populate it with the enclave image.
-    pub fn mem_set(&mut self, mem: MemoryInfo) -> Result<(), LaunchError> {
+    pub fn set_memory(&mut self, mem: MemoryInfo) -> Result<(), LaunchError> {
         // Load the VM's enclave image type and fetch the offset in enclave memory of where to
         // start placing the enclave image.
         let mut load_info = ImageLoadInfo::from(&mem.image_type);
@@ -85,7 +85,7 @@ impl Launcher {
     /// set by the caller.
     ///
     /// If set by the caller, the CPU needs to be available in the NE CPU pool.
-    pub fn vcpu_add(&mut self, id: Option<u32>) -> Result<(), LaunchError> {
+    pub fn add_vcpu(&mut self, id: Option<u32>) -> Result<(), LaunchError> {
         let mut id = id.unwrap_or(0);
 
         let ret = unsafe { libc::ioctl(self.vm_fd, NE_ADD_VCPU as _, &mut id) };

@@ -45,10 +45,10 @@ fn launch() {
 
     // Set enclave memory with provided EIF file and 128 MiB of memory.
     let mem = MemoryInfo::new(ImageType::Eif(&mut eif), ENCLAVE_VM_SIZE_MIB);
-    launcher.mem_set(mem).unwrap();
+    launcher.set_memory(mem).unwrap();
 
     // Add one vCPU to the enclave.
-    launcher.vcpu_add(None).unwrap();
+    launcher.add_vcpu(None).unwrap();
 
     // Create a vsock listener to verify enclave kernel started.
     let sockaddr = VsockAddr::new(VMADDR_CID_PARENT, ENCLAVE_READY_VSOCK_PORT);
