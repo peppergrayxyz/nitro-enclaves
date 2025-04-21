@@ -1,0 +1,12 @@
+addReviewers: true
+
+addAssignees: true
+
+reviewers: 
+  - tylerfanelli
+
+skipKeywords:
+  - wip
+  - WIP
+
+numberOfReviewers: 1

@@ -1,0 +1,21 @@
+on: [push, pull_request]
+name: lint
+jobs:
+  fmt:
+    name: cargo fmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+          toolchain: 1.80.0
+      - run: cargo fmt --all -- --check
+  check-spdx-headers:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - uses: enarx/spdx@master
+        with:
+          licenses: Apache-2.0
