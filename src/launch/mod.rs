@@ -38,6 +38,11 @@ impl Launcher {
         })
     }
 
+    /// Get the enclave's file descriptor.
+    pub fn vm_fd(&self) -> RawFd {
+        self.vm_fd
+    }
+
     /// Get the enclave's slot UID.
     pub fn slot_uid(&self) -> u64 {
         self.slot_uid
