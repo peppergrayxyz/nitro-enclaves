@@ -31,6 +31,7 @@ impl<'a> MemoryInfo<'a> {
 
 bitflags! {
     /// Configuration flags for starting an enclave.
+    #[derive(Copy, Clone, Default)]
     pub struct StartFlags: u64 {
         /// Start enclave in debug mode.
         const DEBUG = 1;
