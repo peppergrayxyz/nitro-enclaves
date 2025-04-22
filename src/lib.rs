@@ -2,5 +2,8 @@
 
 //! AWS Nitro Enclave library.
 
-pub mod device;
 pub mod launch;
+
+mod device;
+
+pub use device::*;

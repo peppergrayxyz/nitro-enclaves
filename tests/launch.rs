@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use nitro_enclaves::{
-    device::Device,
     launch::{ImageType, Launcher, MemoryInfo, PollTimeout, StartFlags},
+    Device,
 };
 use nix::{
     poll::{poll, PollFd, PollFlags},
