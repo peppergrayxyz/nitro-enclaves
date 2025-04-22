@@ -15,6 +15,7 @@ use std::os::fd::{AsRawFd, RawFd};
 const VMADDR_CID_PARENT: u32 = 3;
 
 /// Facilitates the execution of the nitro enclaves launch process.
+#[derive(Default)]
 pub struct Launcher {
     vm_fd: RawFd,
     slot_uid: u64,
