@@ -6,12 +6,14 @@ use bitflags::bitflags;
 use std::fs::File;
 
 /// The image type of the enclave.
+#[derive(Debug)]
 pub enum ImageType<'a> {
     /// Enclave Image Format.
     Eif(&'a mut File),
 }
 
 /// Data related to setting enclave memory.
+#[derive(Debug)]
 pub struct MemoryInfo<'a> {
     /// Enclave image type.
     pub image_type: ImageType<'a>,
