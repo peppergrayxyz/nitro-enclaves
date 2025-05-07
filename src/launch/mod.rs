@@ -12,6 +12,8 @@ use linux::*;
 use rand::{rngs::OsRng, TryRngCore};
 use std::os::fd::{AsRawFd, RawFd};
 
+type Result<T> = std::result::Result<T, LaunchError>;
+
 const VMADDR_CID_PARENT: u32 = 3;
 
 /// Facilitates the execution of the nitro enclaves launch process.
@@ -24,7 +26,7 @@ pub struct Launcher {
 
 impl Launcher {
     /// Begin the nitro enclaves launch process by creating a new enclave VM.
-    pub fn new(dev: &Device) -> Result<Self, LaunchError> {
+    pub fn new(dev: &Device) -> Result<Self> {
         let mut slot_uid: u64 = 0;
         let vm_fd = unsafe { libc::ioctl(dev.as_raw_fd(), NE_CREATE_VM as _, &mut slot_uid) };
 
@@ -50,7 +52,7 @@ impl Launcher {
     }
 
     /// Allocate enclave memory and populate it with the enclave image.
-    pub fn set_memory(&mut self, mem: MemoryInfo) -> Result<(), LaunchError> {
+    pub fn set_memory(&mut self, mem: MemoryInfo) -> Result<()> {
         // Load the VM's enclave image type and fetch the offset in enclave memory of where to
         // start placing the enclave image.
         let mut load_info = ImageLoadInfo::from(&mem.image_type);
@@ -91,7 +93,7 @@ impl Launcher {
     /// set by the caller.
     ///
     /// If set by the caller, the CPU needs to be available in the NE CPU pool.
-    pub fn add_vcpu(&mut self, id: Option<u32>) -> Result<(), LaunchError> {
+    pub fn add_vcpu(&mut self, id: Option<u32>) -> Result<()> {
         let mut id = id.unwrap_or(0);
 
         let ret = unsafe { libc::ioctl(self.vm_fd, NE_ADD_VCPU as _, &mut id) };
@@ -107,7 +109,7 @@ impl Launcher {
 
     /// Start running an enclave. Supply start flags and optional enclave CID. If successful, will
     /// return the actual enclave's CID (which may be different than the supplied CID).
-    pub fn start(&self, flags: StartFlags, cid: Option<u64>) -> Result<u64, LaunchError> {
+    pub fn start(&self, flags: StartFlags, cid: Option<u64>) -> Result<u64> {
         let mut cid = cid.unwrap_or(0);
 
         // Ensure that a valid CID is used. If the current CID is invalid, randomly-generate a
