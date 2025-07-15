@@ -115,7 +115,7 @@ impl Launcher {
         // Ensure that a valid CID is used. If the current CID is invalid, randomly-generate a
         // valid one.
         loop {
-            if cid > VMADDR_CID_PARENT as u64 && cid <= u32::MAX as u64 {
+            if cid > VMADDR_CID_PARENT as u64 && cid <= i32::MAX as u64 {
                 break;
             }
 
