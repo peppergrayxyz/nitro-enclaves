@@ -80,7 +80,7 @@ impl Launcher {
 
         // Add each memory region.
         for r in regions.inner_ref() {
-            let ret = unsafe { libc::ioctl(self.vm_fd, NE_SET_USER_MEMORY_REGION, r) };
+            let ret = unsafe { libc::ioctl(self.vm_fd, NE_SET_USER_MEMORY_REGION as _, r) };
             if ret < 0 {
                 panic!();
             }
