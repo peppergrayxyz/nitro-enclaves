@@ -43,6 +43,12 @@ impl LaunchError {
     }
 }
 
+impl From<nix::errno::Errno> for LaunchError {
+    fn from(_e: nix::errno::Errno) -> Self {
+        LaunchError::Ioctl(IoctlError::from_errno())
+    }
+}
+
 impl fmt::Display for LaunchError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let msg = match self {

@@ -8,25 +8,39 @@ use std::{
     io::{Read, Seek},
 };
 
-pub const NE_MAGIC: u64 = 0xAE;
+use nix::{ioctl_read, ioctl_readwrite, ioctl_write_ptr};
+
+pub const NE_MAGIC: u8 = 0xAE;
 
 // Create a slot that is associated with an enclave VM.
-pub const NE_CREATE_VM: u64 = nix::request_code_read!(NE_MAGIC, 0x20, size_of::<u64>()) as _;
+pub const NE_CREATE_VM: u8 = 0x20;
+ioctl_read!(ne_create_vm, NE_MAGIC, NE_CREATE_VM, u64);
 
 // Set a vCPU for an enclave.
-pub const NE_ADD_VCPU: u64 = nix::request_code_readwrite!(NE_MAGIC, 0x21, size_of::<u32>()) as _;
+pub const NE_ADD_VCPU: u8 = 0x21;
+ioctl_readwrite!(ne_add_vcpu, NE_MAGIC, NE_ADD_VCPU, u32);
 
 // Get information needed for in-memory enclave image loading.
-pub const NE_GET_IMAGE_LOAD_INFO: u64 =
-    nix::request_code_readwrite!(NE_MAGIC, 0x22, size_of::<ImageLoadInfo>()) as _;
+pub const NE_GET_IMAGE_LOAD_INFO: u8 = 0x22;
+ioctl_readwrite!(
+    ne_get_image_load_info,
+    NE_MAGIC,
+    NE_GET_IMAGE_LOAD_INFO,
+    ImageLoadInfo
+);
 
 // Set an enclave's memory region.
-pub const NE_SET_USER_MEMORY_REGION: u64 =
-    nix::request_code_write!(NE_MAGIC, 0x23, size_of::<UserMemoryRegion>()) as _;
+pub const NE_SET_USER_MEMORY_REGION: u8 = 0x23;
+ioctl_write_ptr!(
+    ne_set_user_memory_region,
+    NE_MAGIC,
+    NE_SET_USER_MEMORY_REGION,
+    UserMemoryRegion
+);
 
 // Start running an enclave.
-pub const NE_START_ENCLAVE: u64 =
-    nix::request_code_readwrite!(NE_MAGIC, 0x24, size_of::<StartInfo>()) as _;
+pub const NE_START_ENCLAVE: u8 = 0x24;
+ioctl_readwrite!(ne_start_enclave, NE_MAGIC, NE_START_ENCLAVE, StartInfo);
 
 // Default enclave memory region.
 const NE_DEFAULT_MEMORY_REGION: u64 = 0;
